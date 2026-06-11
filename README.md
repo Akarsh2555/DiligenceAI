@@ -1,6 +1,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/LangGraph-Agent_Orchestration-blue?style=for-the-badge&logo=langchain" />
   <img src="https://img.shields.io/badge/Gemini_2.5-LLM_Engine-4285F4?style=for-the-badge&logo=google" />
+  <img src="https://img.shields.io/badge/HuggingFace-Embeddings-FFD21E?style=for-the-badge&logo=huggingface" />
   <img src="https://img.shields.io/badge/Supabase-Auth_%26_Database-3ECF8E?style=for-the-badge&logo=supabase" />
   <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react" />
 </p>
@@ -43,7 +44,7 @@ DiligenceAI is a full-stack RAG (Retrieval-Augmented Generation) application tha
 | Capability | Description |
 |---|---|
 | **Multi-Agent Analysis** | Four specialised LangGraph nodes (Risk, Growth, Legal, Summary) execute in parallel |
-| **Document Ingestion** | Upload PDF, DOCX, XLSX, TXT — auto-chunked and vector-embedded via ChromaDB |
+| **Document Ingestion** | Upload PDF, DOCX, XLSX, TXT — auto-chunked and vector-embedded via HuggingFace + ChromaDB |
 | **RAG Q&A Chat** | Conversational interface with retrieval-augmented answers and source citations |
 | **Web Search Agent** | External search node enriches analysis with real-time market context |
 | **Executive Report** | Auto-generated DOCX report with charts, risk matrix, and formatted sections |
@@ -125,7 +126,7 @@ stateDiagram-v2
 |---|---|
 | `load_node` | Reads PDF/DOCX/XLSX/TXT via `DocumentLoaderRouter`, extracts raw pages with metadata |
 | `chunk_node` | Splits raw documents via `SmartChunker` (recursive text splitting, 1500 char / 200 overlap) |
-| `embed_node` | Embeds chunks in batches of 50 into ChromaDB using `gemini-embedding-2` |
+| `embed_node` | Embeds chunks in batches of 50 into ChromaDB using HuggingFace `all-MiniLM-L6-v2` (local, no API) |
 | `finalize_node` | Updates document status in Supabase, recalculates session chunk totals |
 
 **State schema:**
@@ -212,7 +213,7 @@ class DiligenceState(TypedDict):
 
 | Node | Agent | Model | Purpose |
 |---|---|---|---|
-| `retrieve` | Retriever | `gemini-embedding-2` | Parallel multi-query vector search (risk + growth + legal queries) |
+| `retrieve` | Retriever | `all-MiniLM-L6-v2` | Parallel multi-query vector search (risk + growth + legal queries) |
 | `risk` | Risk Analyst | `gemini-2.5-flash` | Identifies liabilities, regulatory exposure, litigation risk |
 | `growth` | Growth Analyst | `gemini-2.5-flash` | Finds TAM expansion, revenue drivers, partnership opportunities |
 | `legal` | Legal Analyst | `gemini-2.5-flash` | Reviews contract clauses, governing law, indemnification terms |
@@ -251,7 +252,7 @@ def route_after_retrieve(state) -> list[str]:
 | Layer | Technology |
 |---|---|
 | **LLM** | Google Gemini 2.5 Flash |
-| **Embeddings** | Gemini Embedding 2 (`models/gemini-embedding-2`) |
+| **Embeddings** | HuggingFace `all-MiniLM-L6-v2` (local inference, no API key needed) |
 | **Orchestration** | LangGraph (StateGraph with parallel fan-out) |
 | **Observability** | LangSmith (full trace of every run) |
 | **Vector Store** | ChromaDB (persistent, per-session collections) |

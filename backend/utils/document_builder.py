@@ -1,7 +1,6 @@
 import os
 import re
 from pathlib import Path
-import matplotlib.pyplot as plt
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -9,6 +8,12 @@ from docx.oxml.ns import qn
 
 def create_chart(title: str, labels: list, values: list, filename: str, color: str):
     """Generates a beautiful minimalist bar chart and saves it as an image."""
+    # Lazy, headless import: matplotlib + numpy are ~100-150MB and are only
+    # needed for DOCX export, so don't load them at app startup (per worker).
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
     plt.figure(figsize=(6, 3), facecolor='white')
     # Minimalist style
     ax = plt.gca()

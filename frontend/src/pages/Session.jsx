@@ -11,6 +11,7 @@ import AnalysisPanel from '../components/AnalysisPanel';
 import AnalysisInsights from '../components/AnalysisInsights';
 import ReportSection from '../components/ReportSection';
 import ChatInterface from '../components/ChatInterface';
+import PdfViewer from '../components/PdfViewer';
 
 export default function Session() {
   const { sessionId } = useParams();
@@ -152,20 +153,15 @@ export default function Session() {
               </select>
             )}
           </PaneHeader>
-          <div className="flex-1 overflow-y-auto bg-bg-primary p-4">
+          <div className="flex-1 overflow-hidden bg-bg-primary">
              {documents.length === 0 ? (
-               <div className="max-w-md mx-auto space-y-8 py-8">
+               <div className="max-w-md mx-auto space-y-8 py-8 px-4 overflow-y-auto h-full">
                  <DocumentUploader onUpload={handleUpload} uploading={uploading} results={results} />
                </div>
              ) : (
                <div className="h-full border border-border rounded-md bg-bg-elevated overflow-hidden shadow-card">
                  {docUrl && (
-                   <iframe
-                     key={selectedDocId}
-                     src={docUrl}
-                     className="w-full h-full border-0"
-                     title="Document Viewer"
-                   />
+                   <PdfViewer url={docUrl} />
                  )}
                </div>
              )}

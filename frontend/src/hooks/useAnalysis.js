@@ -2,6 +2,8 @@ import { useState, useCallback } from 'react';
 import api from '../lib/api';
 import { supabase } from '../lib/supabase';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
 export function useAnalysis(sessionId) {
   const [analyzing, setAnalyzing] = useState(false);
   const [steps, setSteps] = useState([]);
@@ -20,7 +22,7 @@ export function useAnalysis(sessionId) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token || '';
 
-      const response = await fetch(`/api/sessions/${sessionId}/analyze`, {
+      const response = await fetch(`${API_BASE}/sessions/${sessionId}/analyze`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

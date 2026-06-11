@@ -99,9 +99,10 @@ export default function Session() {
 
   // Stable iframe URL — only changes when the selected doc changes, so the PDF
   // doesn't reload on every re-render (chat streaming, doc polling, etc.).
+  const API_BASE = import.meta.env.VITE_API_URL || '/api';
   const docUrl = useMemo(
     () => (selectedDocId
-      ? `http://localhost:8000/api/sessions/${sessionId}/documents/${selectedDocId}/view`
+      ? `${API_BASE}/sessions/${sessionId}/documents/${selectedDocId}/view`
       : null),
     [sessionId, selectedDocId],
   );

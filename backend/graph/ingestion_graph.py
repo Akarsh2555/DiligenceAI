@@ -58,9 +58,10 @@ async def embed_node(state: IngestionState) -> IngestionState:
     manager = get_vector_store_manager()
     chunks = state["chunks"]
     chunk_index = state.get("chunk_index", 0)
-    
-    # Process in batches of 50 chunks
-    batch_size = 50
+
+    # Small batches keep peak memory low (important on 512MB hosts) and stay
+    # within embedding-API rate limits.
+    batch_size = 16
     batch = chunks[chunk_index:chunk_index + batch_size]
     
     try:

@@ -28,8 +28,9 @@ async def _run_ingestion(
     """
     Background task: run the LangGraph ingestion pipeline.
     """
+    import asyncio
     from backend.graph.ingestion_graph import build_ingestion_graph
-    
+
     graph = build_ingestion_graph()
     initial_state = {
         "file_path": file_path,
@@ -39,13 +40,16 @@ async def _run_ingestion(
         "chunk_index": 0,
         "error": ""
     }
-    
+
     try:
-        await graph.ainvoke(initial_state)
+        # Hard ceiling so a hung embedding/API call can't leave the document
+        # stuck on "processing" forever — it gets recorded as an error instead.
+        await asyncio.wait_for(graph.ainvoke(initial_state), timeout=600)
     except Exception as e:
+        msg = "Ingestion timed out" if isinstance(e, asyncio.TimeoutError) else str(e)
         client = get_supabase_client()
         client.table("documents") \
-            .update({"status": "error", "error_message": str(e)[:500]}) \
+            .update({"status": "error", "error_message": msg[:500]}) \
             .eq("id", doc_id) \
             .execute()
 

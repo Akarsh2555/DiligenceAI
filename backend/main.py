@@ -72,6 +72,18 @@ async def startup():
         f"{'ENABLED → project ' + settings.langchain_project if _tracing_enabled else 'DISABLED'}"
     )
 
+    # Recover orphaned ingestions: if the worker was killed mid-embedding (e.g.
+    # OOM on a small instance), documents are left stuck on "processing" and the
+    # UI spins forever. Flag them as errored on restart so the user can retry.
+    try:
+        from backend.database import get_supabase_client
+        get_supabase_client().table("documents") \
+            .update({"status": "error", "error_message": "Ingestion interrupted (server restarted). Please re-upload."}) \
+            .eq("status", "processing") \
+            .execute()
+    except Exception as e:
+        print(f"[startup] orphan-doc cleanup skipped: {e}")
+
 
 @app.on_event("shutdown")
 async def shutdown():

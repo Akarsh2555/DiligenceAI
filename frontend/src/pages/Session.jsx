@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, FileText, Download, UploadCloud, Activity, Layout } from 'lucide-react';
-import api from '../lib/api';
+import api, { API_BASE } from '../lib/api';
 import { useUpload } from '../hooks/useUpload';
 import { useAnalysis } from '../hooks/useAnalysis';
 import { useChat } from '../hooks/useChat';
@@ -99,7 +99,6 @@ export default function Session() {
 
   // Stable iframe URL — only changes when the selected doc changes, so the PDF
   // doesn't reload on every re-render (chat streaming, doc polling, etc.).
-  const API_BASE = import.meta.env.VITE_API_URL || '/api';
   const docUrl = useMemo(
     () => (selectedDocId
       ? `${API_BASE}/sessions/${sessionId}/documents/${selectedDocId}/view`

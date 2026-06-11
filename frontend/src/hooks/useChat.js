@@ -1,7 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+import { API_BASE } from '../lib/api';
 
 export function useChat(sessionId) {
   const [messages, setMessages] = useState([]);

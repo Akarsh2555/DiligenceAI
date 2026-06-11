@@ -161,15 +161,20 @@ async def delete_session(
             .eq("id", session_id) \
             .eq("user_id", user["user_id"]) \
             .execute()
-
-        # Clean up vector store
-        manager = get_vector_store_manager()
-        await manager.delete_session(session_id)
-
-        return {"message": "Session deleted"}
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Session deletion failed: {str(e)}",
         )
+
+    # Vector-store cleanup is best-effort: the session row is already gone, so a
+    # failure here (e.g. Chroma/embedding init issues on a constrained host)
+    # must NOT turn a successful delete into a 500 — otherwise the UI keeps
+    # showing the deleted card.
+    try:
+        manager = get_vector_store_manager()
+        await manager.delete_session(session_id)
+    except Exception as e:
+        print(f"[sessions] vector cleanup failed for {session_id}: {e}")
+
+    return {"message": "Session deleted"}

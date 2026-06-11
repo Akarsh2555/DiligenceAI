@@ -1,8 +1,16 @@
 import axios from 'axios';
 import { supabase } from './supabase';
 
+// Single source of truth for the backend base URL.
+// - In dev: leave VITE_API_URL unset → '/api' (Vite proxy forwards to :8000).
+// - In prod: set VITE_API_URL to the deployed backend, e.g.
+//     https://your-backend.onrender.com/api
+// Used by axios AND by the raw fetch()/iframe paths so nothing hits the
+// frontend host or localhost in production.
+export const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 

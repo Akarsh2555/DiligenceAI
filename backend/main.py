@@ -35,9 +35,12 @@ ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
 
-prod_origin = os.environ.get("FRONTEND_URL")
-if prod_origin:
-    ALLOWED_ORIGINS.append(prod_origin)
+# FRONTEND_URL may be a single origin or a comma-separated list of production
+# origins, e.g. "https://diligenceai.vercel.app,https://app.example.com".
+for origin in (os.environ.get("FRONTEND_URL") or "").split(","):
+    origin = origin.strip().rstrip("/")
+    if origin:
+        ALLOWED_ORIGINS.append(origin)
 
 # CORS — allow frontend dev server and production UI
 app.add_middleware(

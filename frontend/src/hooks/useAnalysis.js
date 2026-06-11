@@ -1,8 +1,6 @@
 import { useState, useCallback } from 'react';
-import api from '../lib/api';
+import { API_BASE } from '../lib/api';
 import { supabase } from '../lib/supabase';
-
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export function useAnalysis(sessionId) {
   const [analyzing, setAnalyzing] = useState(false);

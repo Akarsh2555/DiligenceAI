@@ -4,11 +4,16 @@ Currently uses Google text-embedding-004.
 """
 
 from langchain_core.embeddings import Embeddings
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+import os
 
 def get_embedding_model() -> Embeddings:
     """
     Factory for the embedding model.
-    Uses local HuggingFace embeddings (all-MiniLM-L6-v2) to avoid API rate limits.
+    Uses Google text-embedding-004.
     """
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    api_key = os.environ.get("GEMINI_API_KEY")
+    return GoogleGenerativeAIEmbeddings(
+        model="models/text-embedding-004", 
+        google_api_key=api_key
+    )

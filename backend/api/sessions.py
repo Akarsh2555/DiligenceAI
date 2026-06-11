@@ -78,16 +78,22 @@ async def get_session(
     """Get a single session by ID."""
     try:
         client = get_supabase_client()
-        result = (
-            client.table("sessions")
-            .select("*")
-            .eq("id", session_id)
-            .eq("user_id", user["user_id"])
-            .single()
-            .execute()
-        )
-
-        if not result.data:
+        try:
+            result = (
+                client.table("sessions")
+                .select("*")
+                .eq("id", session_id)
+                .eq("user_id", user["user_id"])
+                .single()
+                .execute()
+            )
+        except Exception as e:
+            if "PGRST116" in str(e) or "0 rows" in str(e) or "no rows" in str(e).lower():
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Session not found.",
+                )
+            raise
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Session not found.",

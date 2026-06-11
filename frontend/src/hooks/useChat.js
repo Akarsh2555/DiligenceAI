@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+
 export function useChat(sessionId) {
   const [messages, setMessages] = useState([]);
   const [streaming, setStreaming] = useState(false);
@@ -19,7 +21,7 @@ export function useChat(sessionId) {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token || '';
 
-      const response = await fetch(`/api/sessions/${sessionId}/ask`, {
+      const response = await fetch(`${API_BASE}/sessions/${sessionId}/ask`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +94,7 @@ export function useChat(sessionId) {
     if (!sessionId) return;
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`/api/sessions/${sessionId}/chat-history`, {
+      const res = await fetch(`${API_BASE}/sessions/${sessionId}/chat-history`, {
         headers: { 'Authorization': `Bearer ${session?.access_token}` },
       });
       const data = await res.json();

@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+/* ══════════════════════════════════════════════════════════════════
+   DiligenceAI — Hybrid Design System
+   Claude warm-editorial canvas  ×  Cohere enterprise data surfaces
+   ══════════════════════════════════════════════════════════════════ */
+@theme {
+  /* ── Surfaces ── */
+  --color-bg-primary: #faf9f5;     /* warm cream canvas (long-form reading) */
+  --color-bg-soft: #f5f1ea;        /* soft stone band */
+  --color-bg-surface: #efe9de;     /* feature card cream */
+  --color-bg-elevated: #ffffff;    /* elevated white card */
+  --color-bg-dark: #071829;        /* Cohere enterprise navy */
+  --color-bg-dark-soft: #0c2238;   /* elevated navy panel */
+  --color-bg-deep-green: #003c33;  /* Cohere agent green */
+
+  /* ── Borders ── */
+  --color-border: #e6dfd8;         /* hairline on cream */
+  --color-border-soft: #ede8e0;    /* barely-there divider */
+  --color-border-light: #f0ebe3;
+  --color-border-dark: #1c3047;    /* hairline on navy */
+
+  /* ── Brand / Accent ── */
+  --color-accent-coral: #cc785c;
+  --color-accent-coral-hover: #a9583e;
+  --color-accent-coral-soft: #f4e3da;
+  --color-accent-blue: #1863dc;
+  --color-accent-teal: #5db8a6;
+
+  /* ── Semantic ── */
+  --color-risk-high: #b30000;
+  --color-risk-medium: #d4a017;
+  --color-risk-low: #5db872;
+
+  /* ── Text ── */
+  --color-text-primary: #141413;
+  --color-text-secondary: #57544d;
+  --color-text-muted: #8e8b82;
+  --color-text-on-dark: #faf9f5;
+  --color-text-on-dark-soft: #9aa6b2;
+
+  /* ── Type ── */
+  --font-display: 'Fraunces', 'Tiempos Headline', Georgia, serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ── Radius ── */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+  --radius-pill: 9999px;
+
+  /* ── Elevation ── */
+  --shadow-card: 0 1px 2px rgba(20,20,19,0.04), 0 6px 24px rgba(20,20,19,0.04);
+  --shadow-lift: 0 2px 4px rgba(20,20,19,0.05), 0 12px 36px rgba(20,20,19,0.08);
+  --shadow-coral: 0 8px 24px rgba(204,120,92,0.28);
+}
+
+/* ── Resets ─────────────────────────────────────────────── */
+/* NB: Tailwind v4 preflight already resets margin/padding and sets
+   box-sizing. Re-declaring `* { margin:0; padding:0 }` here would be
+   *unlayered* CSS, which beats Tailwind's layered utilities and silently
+   breaks every mx-auto / mb-* / p-* class. So we deliberately do not. */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
+}
+
+#root { min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── Typography ─────────────────────────────────────────── */
+.font-display { font-family: var(--font-display); }
+
+/* Heading defaults live in @layer base so Tailwind text-color utilities
+   (e.g. text-text-on-dark) still win on dark surfaces. If this block were
+   unlayered it would override every `text-*` utility on headings — which is
+   exactly what made dark-surface titles render as invisible dark text. */
+@layer base {
+  h1, h2, h3, .heading-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    color: var(--color-text-primary);
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ── Animations ─────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(24,99,220,0.0); }
+  50%      { box-shadow: 0 0 0 4px rgba(24,99,220,0.18); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in    { animation: fadeIn 0.4s ease-out forwards; }
+.animate-slide-in   { animation: slideIn 0.3s ease-out forwards; }
+.animate-pulse-glow { animation: pulseGlow 1.6s ease-in-out infinite; }
+.animate-float      { animation: floaty 5s ease-in-out infinite; }
+.animate-marquee    { animation: marquee 38s linear infinite; }
+.animate-marquee:hover { animation-play-state: paused; }
+
+/* Scroll-reveal — toggled by an IntersectionObserver in the Landing page. */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(.22,.61,.36,1), transform 0.7s cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, transform;
+}
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .animate-float, .animate-marquee { animation: none; }
+}
+
+/* ── Reusable surfaces ──────────────────────────────────── */
+.panel {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.glass {
+  background: rgba(250, 249, 245, 0.72);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.glass-dark {
+  background: rgba(7, 24, 41, 0.82);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(250, 249, 245, 0.08);
+}
+
+/* Subtle dotted texture for the navy agent console */
+.bg-grid-dark {
+  background-image: radial-gradient(rgba(250,249,245,0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* ── Markdown content ───────────────────────────────────── */
+.markdown-content {
+  font-family: var(--font-sans);
+  line-height: 1.7;
+  color: var(--color-text-primary);
+  font-size: 15px;
+}
+.markdown-content h1,
+.markdown-content h2 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 400;
+  margin: 2rem 0 1rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.markdown-content h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin: 1.5rem 0 0.6rem;
+}
+.markdown-content p { margin-bottom: 1rem; }
+.markdown-content ul,
+.markdown-content ol { margin-left: 1.4rem; margin-bottom: 1rem; }
+.markdown-content li { margin-bottom: 0.4rem; }
+.markdown-content strong { font-weight: 600; color: var(--color-text-primary); }
+.markdown-content a { color: var(--color-accent-blue); text-decoration: underline; text-underline-offset: 2px; }
+.markdown-content blockquote {
+  border-left: 3px solid var(--color-accent-coral);
+  padding-left: 1rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 1rem 0;
+}
+.markdown-content code {
+  font-family: var(--font-mono);
+  background: var(--color-bg-surface);
+  color: var(--color-accent-coral-hover);
+  padding: 0.15rem 0.4rem;
+  border-radius: var(--radius-xs);
+  font-size: 0.85em;
+}
+.markdown-content pre {
+  background: var(--color-bg-dark);
+  color: var(--color-text-on-dark);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.markdown-content pre code { background: transparent; color: inherit; padding: 0; }
+.markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.markdown-content th,
+.markdown-content td {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+}
+.markdown-content th { font-weight: 600; color: var(--color-text-secondary); }
+
+/* Inverted markdown (inside coral / user bubbles) */
+.markdown-content.on-accent,
+.markdown-content.on-accent strong { color: #fff; }
+.markdown-content.on-accent code { background: rgba(255,255,255,0.18); color: #fff; }

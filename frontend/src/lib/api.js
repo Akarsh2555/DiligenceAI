@@ -19,12 +19,20 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (!refreshError) {
-        const { data: { session } } = await supabase.auth.getSession();
-        error.config.headers.Authorization = `Bearer ${session.access_token}`;
-        return api.request(error.config);
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError) {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
+            return api(originalRequest);
+          }
+        }
+      } catch (e) {
+        // Refresh failed, let the error fall through
       }
     }
     return Promise.reject(error);

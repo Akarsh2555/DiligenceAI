@@ -115,9 +115,6 @@ async def upload_documents(
             file=content,
             file_options={"content-type": file.content_type}
         )
-        
-        # Get public URL
-        file_url = client.storage.from_("documents").get_public_url(safe_name)
 
         # Create document record in Supabase
         doc_result = (
@@ -126,7 +123,7 @@ async def upload_documents(
                 "session_id": session_id,
                 "user_id": user["user_id"],
                 "filename": file.filename,
-                "file_path": file_url,
+                "file_path": safe_name,
                 "file_type": ext.lstrip("."),
                 "file_size": len(content),
                 "status": "pending",
@@ -139,7 +136,7 @@ async def upload_documents(
         # Queue background ingestion
         background_tasks.add_task(
             _run_ingestion,
-            file_url,
+            safe_name,
             doc_id,
             session_id,
             user["user_id"],

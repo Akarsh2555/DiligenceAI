@@ -50,12 +50,19 @@ async def view_document(session_id: str, document_id: str):
         raise HTTPException(status_code=404, detail="File not found in database.")
 
     if file_path.startswith("http://") or file_path.startswith("https://"):
-        # The browser will handle rendering the PDF directly from the URL.
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url=file_path)
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found on disk.")
+    # Check if it's a Supabase storage path (not an absolute local path)
+    if not os.path.isabs(file_path) or not os.path.exists(file_path):
+        # Generate signed URL
+        res = client.storage.from_("documents").create_signed_url(file_path, 3600)
+        signed_url = res.get("signedURL")
+        if signed_url:
+            from fastapi.responses import RedirectResponse
+            return RedirectResponse(url=signed_url)
+        else:
+            raise HTTPException(status_code=404, detail="File not found in storage.")
 
     ext = os.path.splitext(file_path)[1].lower()
     media_type = {

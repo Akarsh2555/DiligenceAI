@@ -30,23 +30,38 @@ async def load_node(state: IngestionState) -> IngestionState:
         
         file_path = state["file_path"]
         
-        # If it's a URL, download it to a temp file first
-        if file_path.startswith("http://") or file_path.startswith("https://"):
+        # Determine if file_path is a local file or a Supabase storage path
+        if not os.path.exists(file_path) and not file_path.startswith("http"):
             import tempfile
-            import httpx
             import os
             
             # Extract suffix to maintain correct file type for loader
             suffix = Path(file_path).suffix
-            # Some URLs might have query params, strip them for the suffix
-            if "?" in suffix:
-                suffix = suffix.split("?")[0]
-                
             fd, temp_path = tempfile.mkstemp(suffix=suffix)
             os.close(fd)
             
             try:
-                # Use httpx to download the file
+                # Download directly using Supabase client
+                res = client.storage.from_("documents").download(file_path)
+                with open(temp_path, "wb") as f:
+                    f.write(res)
+                
+                path = Path(temp_path)
+                raw_docs = await DocumentLoaderRouter.load(path, state["session_id"])
+            finally:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+        elif file_path.startswith("http"):
+            # Fallback for URLs
+            import tempfile
+            import httpx
+            import os
+            
+            suffix = Path(file_path).suffix.split("?")[0]
+            fd, temp_path = tempfile.mkstemp(suffix=suffix)
+            os.close(fd)
+            
+            try:
                 async with httpx.AsyncClient(follow_redirects=True) as http_client:
                     response = await http_client.get(file_path)
                     response.raise_for_status()
@@ -59,7 +74,7 @@ async def load_node(state: IngestionState) -> IngestionState:
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
         else:
-            # Local file fallback
+            # Local file
             path = Path(file_path)
             raw_docs = await DocumentLoaderRouter.load(path, state["session_id"])
         

@@ -106,14 +106,18 @@ async def upload_documents(
             })
             continue
 
-        # Sanitize filename and save to disk
-        safe_name = f"{uuid.uuid4().hex}_{file.filename.replace('..', '').replace('/', '_')}"
-        file_path = settings.upload_path / session_id
-        file_path.mkdir(parents=True, exist_ok=True)
-        full_path = file_path / safe_name
-
-        with open(full_path, "wb") as f:
-            f.write(content)
+        # Save to Supabase Storage
+        safe_name = f"{session_id}/{uuid.uuid4().hex}_{file.filename.replace('..', '').replace('/', '_')}"
+        
+        # Upload file bytes to Supabase storage
+        res = client.storage.from_("documents").upload(
+            path=safe_name, 
+            file=content,
+            file_options={"content-type": file.content_type}
+        )
+        
+        # Get public URL
+        file_url = client.storage.from_("documents").get_public_url(safe_name)
 
         # Create document record in Supabase
         doc_result = (
@@ -122,7 +126,7 @@ async def upload_documents(
                 "session_id": session_id,
                 "user_id": user["user_id"],
                 "filename": file.filename,
-                "file_path": str(full_path),
+                "file_path": file_url,
                 "file_type": ext.lstrip("."),
                 "file_size": len(content),
                 "status": "pending",
@@ -135,7 +139,7 @@ async def upload_documents(
         # Queue background ingestion
         background_tasks.add_task(
             _run_ingestion,
-            str(full_path),
+            file_url,
             doc_id,
             session_id,
             user["user_id"],

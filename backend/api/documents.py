@@ -46,10 +46,17 @@ async def view_document(session_id: str, document_id: str):
         raise HTTPException(status_code=404, detail="Document not found.")
         
     file_path = result.data.get("file_path")
-    if not file_path or not os.path.exists(file_path):
+    if not file_path:
+        raise HTTPException(status_code=404, detail="File not found in database.")
+
+    if file_path.startswith("http://") or file_path.startswith("https://"):
+        # The browser will handle rendering the PDF directly from the URL.
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=file_path)
+
+    if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found on disk.")
 
-    # Pick a content type the browser can render inline in the <iframe>.
     ext = os.path.splitext(file_path)[1].lower()
     media_type = {
         ".pdf": "application/pdf",
@@ -58,9 +65,6 @@ async def view_document(session_id: str, document_id: str):
         ".html": "text/html; charset=utf-8",
     }.get(ext, "application/octet-stream")
 
-    # content_disposition_type="inline" is the key bit — the previous code passed
-    # `filename=`, which defaults to "attachment" and makes the browser DOWNLOAD
-    # the file instead of displaying it, leaving the iframe blank.
     return FileResponse(
         file_path,
         media_type=media_type,

@@ -28,8 +28,40 @@ async def load_node(state: IngestionState) -> IngestionState:
         # Update status to processing
         client.table("documents").update({"status": "processing"}).eq("id", state["doc_id"]).execute()
         
-        path = Path(state["file_path"])
-        raw_docs = await DocumentLoaderRouter.load(path, state["session_id"])
+        file_path = state["file_path"]
+        
+        # If it's a URL, download it to a temp file first
+        if file_path.startswith("http://") or file_path.startswith("https://"):
+            import tempfile
+            import httpx
+            import os
+            
+            # Extract suffix to maintain correct file type for loader
+            suffix = Path(file_path).suffix
+            # Some URLs might have query params, strip them for the suffix
+            if "?" in suffix:
+                suffix = suffix.split("?")[0]
+                
+            fd, temp_path = tempfile.mkstemp(suffix=suffix)
+            os.close(fd)
+            
+            try:
+                # Use httpx to download the file
+                async with httpx.AsyncClient(follow_redirects=True) as http_client:
+                    response = await http_client.get(file_path)
+                    response.raise_for_status()
+                    with open(temp_path, "wb") as f:
+                        f.write(response.content)
+                
+                path = Path(temp_path)
+                raw_docs = await DocumentLoaderRouter.load(path, state["session_id"])
+            finally:
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
+        else:
+            # Local file fallback
+            path = Path(file_path)
+            raw_docs = await DocumentLoaderRouter.load(path, state["session_id"])
         
         if not raw_docs:
             return {"error": "No content extracted from file"}

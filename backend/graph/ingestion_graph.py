@@ -1,5 +1,6 @@
 import asyncio
 import time
+import os
 from pathlib import Path
 from typing import Annotated, TypedDict, List
 from langchain_core.documents import Document
@@ -33,7 +34,6 @@ async def load_node(state: IngestionState) -> IngestionState:
         # Determine if file_path is a local file or a Supabase storage path
         if not os.path.exists(file_path) and not file_path.startswith("http"):
             import tempfile
-            import os
             
             # Extract suffix to maintain correct file type for loader
             suffix = Path(file_path).suffix
@@ -55,7 +55,6 @@ async def load_node(state: IngestionState) -> IngestionState:
             # Fallback for URLs
             import tempfile
             import httpx
-            import os
             
             suffix = Path(file_path).suffix.split("?")[0]
             fd, temp_path = tempfile.mkstemp(suffix=suffix)

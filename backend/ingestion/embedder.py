@@ -12,8 +12,8 @@ def get_embedding_model() -> Embeddings:
     Factory for the embedding model.
     Uses Google text-embedding-004.
     """
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     return GoogleGenerativeAIEmbeddings(
-        model="models/text-embedding-004", 
+        model="models/gemini-embedding-2", 
         google_api_key=api_key
     )
